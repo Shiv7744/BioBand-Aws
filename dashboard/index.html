@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BioBand Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    canvas {
+      max-width: 900px;
+      margin: 30px auto;
+      display: block;
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    #status {
+      text-align: center;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>BioBand Live Dashboard</h1>
+  <p id="status">Loading readings...</p>
+  <canvas id="heartRateChart"></canvas>
+  <canvas id="spo2Chart"></canvas>
+  <canvas id="tempChart"></canvas>
+
+  <script>
+    // Replace this with YOUR actual API Gateway Invoke URL + /readings
+    const API_URL = "https://lpz5fh8h17.execute-api.us-east-1.amazonaws.com/readings";
+
+    async function loadDashboard() {
+      const statusEl = document.getElementById("status");
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        statusEl.textContent = `Showing last ${data.length} readings for ${data[0]?.device_id ?? "unknown device"}`;
+
+        const labels = data.map(r => new Date(r.timestamp).toLocaleTimeString());
+        const heartRates = data.map(r => r.heart_rate);
+        const spo2s = data.map(r => r.spo2);
+        const temps = data.map(r => r.temperature);
+
+        makeChart("heartRateChart", "Heart Rate (bpm)", labels, heartRates, "#e74c3c");
+        makeChart("spo2Chart", "SpO2 (%)", labels, spo2s, "#3498db");
+        makeChart("tempChart", "Temperature (°F)", labels, temps, "#f1c40f");
+
+      } catch (err) {
+        statusEl.textContent = "Error loading data: " + err.message;
+        console.error(err);
+      }
+    }
+
+    function makeChart(canvasId, label, labels, values, color) {
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: label,
+            data: values,
+            borderColor: color,
+            backgroundColor: color + "33",
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#eee" } }
+          },
+          scales: {
+            x: { ticks: { color: "#aaa" } },
+            y: { ticks: { color: "#aaa" } }
+          }
+        }
+      });
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
