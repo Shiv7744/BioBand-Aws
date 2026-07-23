@@ -54,7 +54,8 @@ Python Simulator (generates vitals + anomalies)
 
 The dashboard displays three live charts (heart rate, SpO2, temperature), each pulling the most recent 50 readings directly from DynamoDB via the API.
 
-*(Add a screenshot of the dashboard here.)*
+<img width="561" height="775" alt="Screenshot 2026-07-23 at 1 01 09 PM" src="https://github.com/user-attachments/assets/3d295a24-ddad-48a9-8732-1833ba14e461" />
+
 
 ## Running It
 
